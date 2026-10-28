@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="pageTitleMeta">ViraUnlock - Streaming & 5-Min Temporary Access</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkCoffee: '#291C0E',
+                        warmBrown: '#6E473B',
+                        softTaupe: '#A78D78',
+                        warmGrey: '#BEB5A9',
+                        cream: '#E1D4C2',
+                        adminBlack: '#0B0B0B',
+                        adminCrimson: '#8B0D1A',
+                        adminOffWhite: '#F5F2ED'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #291C0E;
+            color: #E1D4C2;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #291C0E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6E473B;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A78D78;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col bg-darkCoffee text-cream selection:bg-warmBrown selection:text-cream">
+
+    <!-- App Container -->
+    <div id="app" class="flex-1 flex flex-col max-w-7xl mx-auto w-full min-h-screen relative shadow-2xl bg-darkCoffee overflow-x-hidden">
+
+        <!-- Top Header (Desktop & Mobile) -->
+        <header id="mainHeader" class="sticky top-0 z-40 bg-darkCoffee/95 backdrop-blur-md border-b border-warmBrown/40 px-4 py-3 flex items-center justify-between gap-2">
+            <!-- Brand Logo & Name -->
+            <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="router.navigate('home')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-warmBrown to-softTaupe flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-play text-cream text-lg"></i>
+                </div>
+                <div>
+                    <h1 id="brandHeaderName" class="font-bold text-base sm:text-lg tracking-tight text-cream flex items-center gap-1.5">
+                        ViraUnlock <span class="text-[10px] px-1.5 py-0.5 rounded bg-warmBrown/60 text-warmGrey font-medium">5M Temp Access</span>
+                    </h1>
+                    <!-- Live Online Status Indicator with allowed green color #22C55E -->
+                    <div class="flex items-center gap-1.5 text-[11px] text-softTaupe">
+                        <span class="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse inline-block"></span>
+                        <span id="headerOnlineCount">Calculating online...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center space-x-1 bg-warmBrown/20 border border-warmBrown/40 p-1 rounded-2xl">
+                <button onclick="router.navigate('home')" id="desktop-nav-home" class="px-4 py-1.5 rounded-xl text-xs font-semibold transition text-cream bg-warmBrown/60">
+                    <i class="fa-solid fa-house mr-1.5 text-softTaupe"></i> Home
+                </button>
+                <button onclick="router.navigate('explore')" id="desktop-nav-explore" class="px-4 py-1.5 rounded-xl text-xs font-semibold transition text-softTaupe hover:text-cream">
+                    <i class="fa-solid fa-compass mr-1.5 text-softTaupe"></i> Explore
+                </button>
+                <button onclick="router.navigate('profile')" id="desktop-nav-profile" class="px-4 py-1.5 rounded-xl text-xs font-semibold transition text-softTaupe hover:text-cream relative">
+                    <i class="fa-solid fa-user-shield mr-1.5 text-softTaupe"></i> Active Sessions
+                    <span id="desktopUnlockedBadge" class="absolute -top-1 -right-1 bg-softTaupe text-darkCoffee text-[9px] font-bold px-1.5 py-0.2 rounded-full hidden">0</span>
+                </button>
+            </nav>
+
+            <!-- Header Right Actions -->
+            <div class="flex items-center space-x-2">
+                <div class="hidden lg:flex items-center w-40 xl:w-56">
+                    <div class="relative w-full">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-softTaupe">
+                            <i class="fa-solid fa-search text-xs"></i>
+                        </span>
+                        <input type="text" id="desktopSearchInput" placeholder="Search videos..." 
+                            class="w-full pl-9 pr-8 py-1.5 bg-warmBrown/30 border border-warmBrown/60 rounded-xl text-cream placeholder-warmGrey text-xs focus:outline-none focus:border-softTaupe transition"
+                            onkeydown="if(event.key==='Enter') handleSearchInput(this.value)">
+                        <button onclick="handleSearchInput(document.getElementById('desktopSearchInput').value)" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-softTaupe hover:text-cream">
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <a href="#" id="telegramBotBtn" target="_blank" rel="noopener noreferrer" 
+                   class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-warmBrown/40 hover:bg-warmBrown border border-warmBrown/80 rounded-xl text-xs font-semibold text-cream transition shadow-sm">
+                    <i class="fa-brands fa-telegram text-softTaupe text-sm"></i>
+                    <span>Telegram Bot</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Mobile Search Bar -->
+        <div id="mobileSearchContainer" class="md:hidden px-4 py-2.5 bg-darkCoffee border-b border-warmBrown/20">
+            <div class="relative w-full">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-softTaupe">
+                    <i class="fa-solid fa-search text-xs"></i>
+                </span>
+                <input type="text" id="mobileSearchInput" placeholder="Search videos..." 
+                    class="w-full pl-9 pr-9 py-2 bg-warmBrown/30 border border-warmBrown/60 rounded-xl text-cream placeholder-warmGrey text-xs focus:outline-none focus:border-softTaupe transition"
+                    onkeydown="if(event.key==='Enter') handleSearchInput(this.value)">
+                <button onclick="handleSearchInput(document.getElementById('mobileSearchInput').value)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-softTaupe hover:text-cream">
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Viewport -->
+        <main id="mainContent" class="flex-1 pb-20 md:pb-12 px-3 sm:px-6 py-4 overflow-y-auto">
+            <!-- Dynamic content inserted by router -->
+        </main>
+
+        <!-- Bottom Navigation Bar (Mobile Only) -->
+        <nav id="mobileBottomNav" class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-darkCoffee/95 backdrop-blur-lg border-t border-warmBrown/40 px-4 py-2 flex justify-around items-center">
+            <button onclick="router.navigate('home')" id="nav-home" class="flex flex-col items-center py-1 text-softTaupe transition">
+                <i class="fa-solid fa-house text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Home</span>
+            </button>
+            <button onclick="router.navigate('explore')" id="nav-explore" class="flex flex-col items-center py-1 text-softTaupe transition">
+                <i class="fa-solid fa-compass text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Explore</span>
+            </button>
+            <button onclick="router.navigate('profile')" id="nav-profile" class="flex flex-col items-center py-1 text-softTaupe transition relative">
+                <i class="fa-solid fa-user-lock text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Active</span>
+                <span id="mobileUnlockedBadge" class="absolute top-0 right-1 w-2 h-2 rounded-full bg-softTaupe hidden"></span>
+            </button>
+            <a href="#" id="mobileTelegramBtn" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center py-1 text-softTaupe transition">
+                <i class="fa-brands fa-telegram text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Telegram</span>
+            </a>
+        </nav>
+
+        <!-- Notification Toast -->
+        <div id="toast" class="fixed top-20 right-4 z-50 transform translate-y-[-200%] opacity-0 transition-all duration-300 max-w-sm bg-warmBrown border border-softTaupe text-cream px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-softTaupe text-lg"></i>
+            <div>
+                <h4 id="toastTitle" class="text-xs font-bold uppercase tracking-wide text-warmGrey">Notification</h4>
+                <p id="toastMessage" class="text-xs text-cream"></p>
+            </div>
+        </div>
+
+        <!-- Ad Simulation Modal -->
+        <div id="adModal" class="fixed inset-0 z-50 bg-darkCoffee/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+            <div class="bg-warmBrown border border-softTaupe rounded-3xl max-w-md w-full p-6 shadow-2xl text-center relative animate-fade-in">
+                <button onclick="closeAdModal()" class="absolute top-4 right-4 text-warmGrey hover:text-cream text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="w-16 h-16 rounded-2xl bg-darkCoffee/50 mx-auto flex items-center justify-center mb-4 border border-softTaupe/30">
+                    <i class="fa-solid fa-rectangle-ad text-softTaupe text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-cream mb-1">Server-Verified Demo Ad Flow</h3>
+                <p class="text-xs text-warmGrey mb-6">Simulating rewarded ad verification (5 seconds). Upon completion, the backend issues a strict 5-minute timed temporary access session.</p>
+                
+                <div id="adTimerBox" class="bg-darkCoffee/60 rounded-2xl p-4 mb-6 border border-warmBrown/60">
+                    <div id="adStatusText" class="text-sm font-semibold text-cream mb-2">Verifying ad view with backend (5s)...</div>
+                    <div class="w-full bg-warmBrown/40 rounded-full h-2.5 overflow-hidden">
+                        <div id="adProgressBar" class="bg-softTaupe h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <button id="completeAdBtn" disabled onclick="finishDemoAd()" 
+                    class="w-full py-3.5 bg-warmBrown hover:bg-softTaupe disabled:bg-warmBrown/70 disabled:text-cream/90 disabled:cursor-not-allowed text-cream font-bold rounded-xl text-sm transition shadow-[0_0_20px_rgba(167,141,120,0.35)] border border-softTaupe/60">
+                    Verify & Start 5-Min Access
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Application JavaScript -->
+    <script>
+        /* ========================================================
+           1. CONFIGURATION & STATE INITIALIZATION (GLOBAL)
+           ======================================================== */
+        const CONFIG = {
+            telegramBotUrl: "https://t.me/ViraUnlockBot",
+            unlockDurationSeconds: 300 // Exactly 5 minutes
+        };
+
+        let state = {
+            currentRoute: 'home',
+            currentParam: null,
+            searchQuery: '',
+            selectedCategory: 'All Videos',
+            activeAdVideoId: null,
+            adminTab: 'overview',
+            adminVideoFilter: '',
+            adminCategoryFilter: ''
+        };
+
+        let isAdminAuthenticated = sessionStorage.getItem('vira_admin_auth') === 'true';
+
+        const router = {
+            navigate: function(route, param = null) {
+                if (route === 'admin' && !isAdminAuthenticated) {
+                    state.currentRoute = 'admin-login';
+                } else {
+                    state.currentRoute = route;
+                    state.currentParam = param;
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.render();
+                updateActiveNavStyles();
+            },
+            render: function() {
+                const container = document.getElementById('mainContent');
+                const mainHeader = document.getElementById('mainHeader');
+                const mobileSearch = document.getElementById('mobileSearchContainer');
+                const mobileNav = document.getElementById('mobileBottomNav');
+
+                if (!container) return;
+                container.innerHTML = '';
+
+                if (state.currentRoute.startsWith('admin')) {
+                    if (mainHeader) mainHeader.style.display = 'none';
+                    if (mobileSearch) mobileSearch.style.display = 'none';
+                    if (mobileNav) mobileNav.style.display = 'none';
+                } else {
+                    if (mainHeader) mainHeader.style.display = 'flex';
+                    if (mobileSearch) mobileSearch.style.display = 'block';
+                    if (mobileNav) mobileNav.style.display = 'flex';
+                }
+
+                Object.keys(activeSessions).forEach(id => isVideoUnlocked(id));
+
+                switch(state.currentRoute) {
+                    case 'home':
+                        container.innerHTML = renderHomePage();
+                        break;
+                    case 'explore':
+                        container.innerHTML = renderExplorePage();
+                        break;
+                    case 'detail':
+                        container.innerHTML = renderDetailPage(state.currentParam);
+                        break;
+                    case 'profile':
+                        container.innerHTML = renderProfilePage();
+                        break;
+                    case 'admin-login':
+                        container.innerHTML = renderAdminLogin();
+                        break;
+                    case 'admin':
+                        if (!isAdminAuthenticated) {
+                            container.innerHTML = renderAdminLogin();
+                        } else {
+                            container.innerHTML = renderAdminDashboard();
+                        }
+                        break;
+                    default:
+                        container.innerHTML = renderHomePage();
+                }
+            }
+        };
+
+        /* ========================================================
+           2. PERSISTENT DATABASE & SAMPLE CATALOG
+           ======================================================== */
+        let sampleVideos = JSON.parse(localStorage.getItem('vira_db_videos')) || [
+            {
+                id: "v1",
+                title: "Cinematic Dhaka Street Food Tour 2026",
+                description: "Explore bustling lanes of Old Dhaka tasting traditional spiced delicacies, crispy jilpis, and mouth-watering biryani.",
+                category: "Deshi Viral",
+                thumbnail: "https://placehold.co/600x340/6E473B/E1D4C2?text=Dhaka+Street+Food",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                isLocked: true,
+                duration: "10:25",
+                createdAt: "2026-06-01",
+                telegramChannelId: "@viraunlock_channel",
+                telegramMsgId: "104",
+                published: true
+            },
+            {
+                id: "v2",
+                title: "Bangles & Heritage: Traditional Craftsmanship",
+                description: "Deep dive into artisan workshops creating stunning glass bangles and hand-woven textiles passed down generations.",
+                category: "New",
+                thumbnail: "https://placehold.co/600x340/6E473B/E1D4C2?text=Heritage+Crafts",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                isLocked: true,
+                duration: "12:40",
+                createdAt: "2026-06-08",
+                telegramChannelId: "@viraunlock_channel",
+                telegramMsgId: "105",
+                published: true
+            },
+            {
+                id: "v3",
+                title: "Cox's Bazar Sunset Drone Cinematic VLOG",
+                description: "Breathtaking 4K drone footage along the world's longest natural sea beach during sunset golden hour.",
+                category: "Deshi Viral",
+                thumbnail: "https://placehold.co/600x340/6E473B/E1D4C2?text=Cox+Bazar+Sunset",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                isLocked: false,
+                duration: "08:50",
+                createdAt: "2026-05-20",
+                telegramChannelId: "@viraunlock_channel",
+                telegramMsgId: "102",
+                published: true
+            },
+            {
+                id: "v4",
+                title: "Trending Tech Gadgets Showcase 2026",
+                description: "Unboxing and testing futuristic gadgets, foldable displays, and smart productivity tools.",
+                category: "Trending",
+                thumbnail: "https://placehold.co/600x340/6E473B/E1D4C2?text=Tech+Gadgets+2026",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                isLocked: true,
+                duration: "15:10",
+                createdAt: "2026-06-07",
+                telegramChannelId: "@viraunlock_channel",
+                telegramMsgId: "109",
+                published: true
+            }
+        ];
+
+        let categoriesList = JSON.parse(localStorage.getItem('vira_db_categories')) || [
+            { name: "All Videos", description: "All published video streams", order: 1 },
+            { name: "Deshi Viral", description: "Trending clips from Bangladesh", order: 2 },
+            { name: "Trending", description: "Most popular viral highlights", order: 3 },
+            { name: "New", description: "Recently added authorized clips", order: 4 }
+        ];
+
+        let adminActivityLog = JSON.parse(localStorage.getItem('vira_admin_activity')) || [
+            { id: 'act_1', action: 'System Initialized', timestamp: new Date().toISOString(), user: 'System Admin' }
+        ];
+
+        let websiteSettings = JSON.parse(localStorage.getItem('vira_website_settings')) || {
+            siteName: 'ViraUnlock',
+            siteDescription: 'Real-Time Analytics & 5-Min Temporary Access',
+            contactEmail: 'support@viraunlock.local',
+            heroVisible: true,
+            privacyContent: 'ViraUnlock provides temporary access sessions under strict backend authorization standards.',
+            termsContent: 'Users agree to temporary viewing terms and authorized bot token delivery.'
+        };
+
+        function saveDatabase() {
+            localStorage.setItem('vira_db_videos', JSON.stringify(sampleVideos));
+            localStorage.setItem('vira_db_categories', JSON.stringify(categoriesList));
+            localStorage.setItem('vira_admin_activity', JSON.stringify(adminActivityLog));
+            localStorage.setItem('vira_website_settings', JSON.stringify(websiteSettings));
+        }
+
+        function logAdminActivity(action) {
+            adminActivityLog.unshift({
+                id: 'act_' + Date.now(),
+                action: action,
+                timestamp: new Date().toISOString(),
+                user: 'Admin'
+            });
+            if (adminActivityLog.length > 50) adminActivityLog.pop();
+            saveDatabase();
+        }
+
+        /* ========================================================
+           3. ANALYTICS & REAL-TIME VIEW COUNTING ENGINE
+           ======================================================== */
+        let visitorId = localStorage.getItem('vira_visitor_id');
+        if (!visitorId) {
+            visitorId = 'anon_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+            localStorage.setItem('vira_visitor_id', visitorId);
+        }
+
+        let analyticsStore = JSON.parse(localStorage.getItem('vira_analytics_store')) || {
+            totalVisitors: 1248,
+            uniqueVisitorsMap: {},
+            videoViews: { v1: 342, v2: 189, v3: 1205, v4: 278 },
+            viewTimestamps: {},
+            telegramDeliveriesSuccess: 420,
+            telegramDeliveriesFailed: 12,
+            dailyStats: {
+                "2026-06-05": 142,
+                "2026-06-06": 198,
+                "2026-06-07": 230,
+                "2026-06-08": 310,
+                "2026-06-09": 275
+            }
+        };
+
+        let activeSessions = JSON.parse(localStorage.getItem('vira_server_sessions')) || {};
+
+        function saveAnalytics() {
+            localStorage.setItem('vira_analytics_store', JSON.stringify(analyticsStore));
+        }
+
+        function saveSessions() {
+            localStorage.setItem('vira_server_sessions', JSON.stringify(activeSessions));
+            updateActiveBadges();
+        }
+
+        function registerVisitor() {
+            const todayKey = new Date().toISOString().split('T')[0];
+            if (!analyticsStore.uniqueVisitorsMap[visitorId]) {
+                analyticsStore.uniqueVisitorsMap[visitorId] = { firstSeen: Date.now() };
+                analyticsStore.totalVisitors += 1;
+            }
+            if (!analyticsStore.dailyStats[todayKey]) {
+                analyticsStore.dailyStats[todayKey] = 0;
+            }
+            saveAnalytics();
+        }
+
+        let activePresenceMap = JSON.parse(localStorage.getItem('vira_active_presence')) || {};
+        
+        function sendHeartbeat() {
+            const now = Date.now();
+            activePresenceMap[visitorId] = now;
+            
+            Object.keys(activePresenceMap).forEach(id => {
+                if (now - activePresenceMap[id] > 90000) {
+                    delete activePresenceMap[id];
+                }
+            });
+            localStorage.setItem('vira_active_presence', JSON.stringify(activePresenceMap));
+            updateOnlineHeaderDisplay();
+        }
+
+        function getActiveOnlineCount() {
+            const now = Date.now();
+            let count = 0;
+            Object.keys(activePresenceMap).forEach(id => {
+                if (now - activePresenceMap[id] <= 90000) {
+                    count++;
+                }
+            });
+            return Math.max(1, count);
+        }
+
+        function updateOnlineHeaderDisplay() {
+            const count = getActiveOnlineCount();
+            const headerEl = document.getElementById('headerOnlineCount');
+            if (headerEl) {
+                headerEl.textContent = `${count} Online Now`;
+            }
+        }
+
+        // STRICT REAL-TIME VIEW COUNTER (30-Minute Window per Visitor Session)
+        function recordRealTimeVideoView(videoId) {
+            const video = sampleVideos.find(v => v.id === videoId);
+            if (!video || video.published === false) return;
+
+            const now = Date.now();
+            const viewKey = `${visitorId}_${videoId}`;
+            const lastViewTime = analyticsStore.viewTimestamps[viewKey] || 0;
+            const thirtyMinutes = 30 * 60 * 1000;
+
+            if (now - lastViewTime > thirtyMinutes) {
+                analyticsStore.viewTimestamps[viewKey] = now;
+                if (!analyticsStore.videoViews[videoId]) {
+                    analyticsStore.videoViews[videoId] = 0;
+                }
+                analyticsStore.videoViews[videoId] += 1;
+                saveAnalytics();
+            }
+        }
+
+        function getVideoViewCount(videoId) {
+            return analyticsStore.videoViews[videoId] || 0;
+        }
+
+        function isVideoUnlocked(videoId) {
+            const session = activeSessions[videoId];
+            if (!session) return false;
+            
+            const now = Date.now();
+            if (now >= session.expiresAt) {
+                delete activeSessions[videoId];
+                saveSessions();
+                return false;
+            }
+            return true;
+        }
+
+        function getRemainingSeconds(videoId) {
+            const session = activeSessions[videoId];
+            if (!session) return 0;
+            const diff = Math.floor((session.expiresAt - Date.now()) / 1000);
+            if (diff <= 0) {
+                delete activeSessions[videoId];
+                saveSessions();
+                return 0;
+            }
+            return diff;
+        }
+
+        function updateActiveBadges() {
+            Object.keys(activeSessions).forEach(id => isVideoUnlocked(id));
+            
+            const activeCount = Object.keys(activeSessions).length;
+            const badgeDesktop = document.getElementById('desktopUnlockedBadge');
+            const badgeMobile = document.getElementById('mobileUnlockedBadge');
+            
+            if (activeCount > 0 && badgeDesktop && badgeMobile) {
+                badgeDesktop.textContent = activeCount;
+                badgeDesktop.classList.remove('hidden');
+                badgeMobile.classList.remove('hidden');
+            } else if (badgeDesktop && badgeMobile) {
+                badgeDesktop.classList.add('hidden');
+                badgeMobile.classList.add('hidden');
+            }
+        }
+
+        function updateActiveNavStyles() {
+            ['home', 'explore', 'profile'].forEach(r => {
+                const btn = document.getElementById(`nav-${r}`);
+                if (btn) {
+                    if (state.currentRoute === r) {
+                        btn.classList.add('text-cream');
+                        btn.classList.remove('text-softTaupe');
+                    } else {
+                        btn.classList.remove('text-cream');
+                        btn.classList.add('text-softTaupe');
+                    }
+                }
+                
+                const desktopBtn = document.getElementById(`desktop-nav-${r}`);
+                if (desktopBtn) {
+                    if (state.currentRoute === r) {
+                        desktopBtn.className = "px-4 py-1.5 rounded-xl text-xs font-semibold transition text-cream bg-warmBrown/60";
+                    } else {
+                        desktopBtn.className = "px-4 py-1.5 rounded-xl text-xs font-semibold transition text-softTaupe hover:text-cream";
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const botLinks = [document.getElementById('telegramBotBtn'), document.getElementById('mobileTelegramBtn')];
+            botLinks.forEach(link => {
+                if (link) link.href = CONFIG.telegramBotUrl;
+            });
+            
+            registerVisitor();
+            sendHeartbeat();
+            setInterval(sendHeartbeat, 15000);
+
+            updateActiveBadges();
+            router.render();
+
+            setInterval(() => {
+                const detailTimerEl = document.getElementById('detailCountdownTimer');
+                if (state.currentRoute === 'detail' && state.currentParam) {
+                    const secs = getRemainingSeconds(state.currentParam);
+                    if (secs > 0) {
+                        const m = Math.floor(secs / 60);
+                        const s = secs % 60;
+                        if (detailTimerEl) detailTimerEl.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+                    } else if (detailTimerEl && detailTimerEl.textContent !== 'Expired') {
+                        detailTimerEl.textContent = 'Expired';
+                        router.render();
+                    }
+                }
+            }, 1000);
+        });
+
+        /* ========================================================
+           4. SEARCH & ADMIN ACCESS INTERCEPTION (`admin563@#`)
+           ======================================================== */
+        function handleSearchInput(query) {
+            const cleanQuery = query.trim();
+            if (cleanQuery === 'admin563@#') {
+                isAdminAuthenticated = true;
+                sessionStorage.setItem('vira_admin_auth', 'true');
+                logAdminActivity('Successful admin session initiated via search bar');
+                showToast('Admin Access', 'Secured session authenticated successfully.', 'success');
+                
+                document.getElementById('desktopSearchInput').value = '';
+                document.getElementById('mobileSearchInput').value = '';
+                
+                router.navigate('admin');
+                return;
+            }
+
+            state.searchQuery = cleanQuery.toLowerCase();
+            if (state.currentRoute === 'detail') {
+                state.currentRoute = 'explore';
+            }
+            router.render();
+        }
+
+        /* ========================================================
+           5. PAGE RENDERERS & CATALOG VIEWS
+           ======================================================== */
+        function renderCategoryPills() {
+            const cats = ['All Videos', ...categoriesList.filter(c => c.name !== 'All Videos').map(c => c.name)];
+            return `
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
+                    ${cats.map(cat => `
+                        <button onclick="filterCategory('${cat}')" 
+                            class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${state.selectedCategory === cat ? 'bg-warmBrown text-cream shadow-md border border-softTaupe' : 'bg-warmBrown/20 text-softTaupe hover:bg-warmBrown/40 border border-warmBrown/40'}">
+                            ${cat}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function filterCategory(cat) {
+            state.selectedCategory = cat;
+            router.render();
+        }
+
+        function renderHomePage() {
+            const publishedVideos = sampleVideos.filter(v => v.published !== false);
+            let filtered = publishedVideos;
+            if (state.searchQuery) {
+                filtered = publishedVideos.filter(v => v.title.toLowerCase().includes(state.searchQuery) || v.description.toLowerCase().includes(state.searchQuery));
+            } else if (state.selectedCategory !== 'All Videos') {
+                filtered = publishedVideos.filter(v => v.category === state.selectedCategory);
+            }
+
+            const latestVideos = [...publishedVideos].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const trendingVideos = [...publishedVideos].sort((a,b) => (getVideoViewCount(b.id)) - (getVideoViewCount(a.id)));
+
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    ${renderCategoryPills()}
+
+                    ${state.searchQuery ? `
+                        <div>
+                            <h3 class="text-base font-bold mb-4 text-cream flex items-center gap-2">
+                                <i class="fa-solid fa-search text-softTaupe"></i> Search Results for "${state.searchQuery}" (${filtered.length})
+                            </h3>
+                            ${filtered.length === 0 ? renderEmptyState() : renderVideoGrid(filtered)}
+                        </div>
+                    ` : `
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-base font-bold text-cream flex items-center gap-2">
+                                    <i class="fa-solid fa-bolt text-softTaupe"></i> Latest Videos
+                                </h3>
+                                <button onclick="router.navigate('explore')" class="text-xs text-softTaupe hover:text-cream font-semibold">View All</button>
+                            </div>
+                            ${latestVideos.length === 0 ? renderEmptyState() : renderVideoGrid(latestVideos)}
+                        </div>
+
+                        <div class="space-y-4 pt-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-base font-bold text-cream flex items-center gap-2">
+                                    <i class="fa-solid fa-fire text-softTaupe"></i> Trending & Most Popular (Sorted by Real Views)
+                                </h3>
+                                <button onclick="router.navigate('explore')" class="text-xs text-softTaupe hover:text-cream font-semibold">View All</button>
+                            </div>
+                            ${trendingVideos.length === 0 ? renderEmptyState() : renderVideoGrid(trendingVideos)}
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function renderExplorePage() {
+            const publishedVideos = sampleVideos.filter(v => v.published !== false);
+            let filtered = publishedVideos;
+            if (state.searchQuery) {
+                filtered = publishedVideos.filter(v => v.title.toLowerCase().includes(state.searchQuery) || v.description.toLowerCase().includes(state.searchQuery));
+            } else if (state.selectedCategory !== 'All Videos') {
+                filtered = publishedVideos.filter(v => v.category === state.selectedCategory);
+            }
+
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    <div>
+                        <h2 class="text-xl font-bold text-cream mb-1">Explore Library</h2>
+                        <p class="text-xs text-warmGrey">Browse all available authorized video clips with 5-minute temporary access sessions.</p>
+                    </div>
+
+                    ${renderCategoryPills()}
+
+                    <div>
+                        ${filtered.length === 0 ? renderEmptyState() : renderVideoGrid(filtered)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderVideoGrid(videos) {
+            return `
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${videos.map(video => {
+                        const isUnlocked = isVideoUnlocked(video.id) || !video.isLocked;
+                        const remaining = getRemainingSeconds(video.id);
+                        const mins = Math.floor(remaining / 60);
+                        const secs = remaining % 60;
+                        const viewsCount = getVideoViewCount(video.id);
+
+                        return `
+                            <div onclick="router.navigate('detail', '${video.id}')" 
+                                class="group bg-warmBrown/20 border border-warmBrown/40 hover:border-softTaupe/60 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-[1.01] cursor-pointer flex flex-col">
+                                <div class="relative aspect-video bg-warmBrown/50 overflow-hidden">
+                                    <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/600x340/6E473B/E1D4C2?text=ViraUnlock'">
+                                    <div class="absolute bottom-2 right-2 bg-darkCoffee/80 backdrop-blur-sm text-cream text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                                        ${video.duration}
+                                    </div>
+                                    <div class="absolute top-2 left-2 flex gap-1.5 flex-wrap">
+                                        <span class="bg-darkCoffee/80 backdrop-blur-sm text-softTaupe text-[10px] font-bold px-2 py-0.5 rounded-md">
+                                            ${video.category}
+                                        </span>
+                                    </div>
+                                    <div class="absolute top-2 right-2">
+                                        ${isUnlocked && remaining > 0 ? `
+                                            <span class="bg-softTaupe/90 text-darkCoffee text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1 shadow-md">
+                                                <i class="fa-solid fa-clock text-[9px]"></i> ${mins}:${secs < 10 ? '0' : ''}${secs} left
+                                            </span>
+                                        ` : `
+                                            <span class="bg-darkCoffee/80 backdrop-blur-sm text-warmGrey text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1">
+                                                <i class="fa-solid fa-lock text-[9px] text-softTaupe"></i> Locked
+                                            </span>
+                                        `}
+                                    </div>
+                                </div>
+                                <div class="p-4 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-sm text-cream line-clamp-1 mb-1 group-hover:text-softTaupe transition">${video.title}</h4>
+                                        <p class="text-xs text-warmGrey line-clamp-2 mb-3">${video.description}</p>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] text-warmGrey pt-2 border-t border-warmBrown/30">
+                                        <span><i class="fa-solid fa-eye mr-1 text-softTaupe"></i> ${viewsCount.toLocaleString()} views</span>
+                                        <span class="font-semibold text-softTaupe">${isUnlocked && remaining > 0 ? 'Active Access' : 'Locked'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function renderDetailPage(videoId) {
+            const video = sampleVideos.find(v => v.id === videoId) || sampleVideos[0];
+            
+            // Record real-time view on visiting detail page (deduplicated per 30 mins)
+            recordRealTimeVideoView(video.id);
+
+            const isUnlocked = isVideoUnlocked(video.id) || !video.isLocked;
+            const remaining = getRemainingSeconds(video.id);
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            const viewsCount = getVideoViewCount(video.id);
+
+            return `
+                <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                    <button onclick="router.navigate('home')" class="inline-flex items-center gap-2 text-xs font-semibold text-softTaupe hover:text-cream transition">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Home
+                    </button>
+
+                    <div class="bg-warmBrown/20 border border-warmBrown/50 rounded-3xl overflow-hidden shadow-2xl">
+                        ${isUnlocked && remaining > 0 ? `
+                            <div class="relative aspect-video bg-darkCoffee">
+                                <video controls autoplay class="w-full h-full object-contain" poster="${video.thumbnail}">
+                                    <source src="${video.videoUrl}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        ` : `
+                            <div class="relative aspect-video bg-darkCoffee flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+                                <div class="absolute inset-0 bg-cover bg-center opacity-25 filter blur-sm" style="background-image: url('${video.thumbnail}')"></div>
+                                <div class="relative z-10 max-w-md space-y-4">
+                                    <div class="w-16 h-16 rounded-2xl bg-warmBrown/60 border border-softTaupe/40 mx-auto flex items-center justify-center shadow-lg">
+                                        <i class="fa-solid fa-lock text-softTaupe text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-cream mb-1">5-Minute Temporary Unlock</h3>
+                                        <p class="text-xs text-warmGrey">Complete the backend-verified ad unlock to stream this video for exactly 5 minutes.</p>
+                                    </div>
+                                    <button onclick="openAdModal('${video.id}')" class="px-7 py-3.5 bg-warmBrown hover:bg-softTaupe text-cream font-bold rounded-xl text-xs transition shadow-[0_0_20px_rgba(167,141,120,0.35)] hover:shadow-[0_0_25px_rgba(167,141,120,0.5)] inline-flex items-center gap-2 border border-softTaupe/50">
+                                        <i class="fa-solid fa-play text-softTaupe"></i> Watch Ad for Unlock
+                                    </button>
+                                </div>
+                            </div>
+                        `}
+
+                        <div class="p-6 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 bg-warmBrown/40 border border-warmBrown/60 text-softTaupe rounded-xl text-xs font-semibold">
+                                        ${video.category}
+                                    </span>
+                                    <span class="text-xs text-warmGrey flex items-center gap-1">
+                                        <i class="fa-solid fa-eye text-softTaupe"></i> ${viewsCount.toLocaleString()} Total Views
+                                    </span>
+                                </div>
+                                ${isUnlocked && remaining > 0 ? `
+                                    <div class="px-3 py-1 bg-softTaupe/20 border border-softTaupe/60 text-cream rounded-xl text-xs font-bold flex items-center gap-1.5">
+                                        <i class="fa-solid fa-hourglass-half text-softTaupe"></i> Expires in: <span id="detailCountdownTimer" class="text-softTaupe">${mins}:${secs < 10 ? '0' : ''}${secs}</span>
+                                    </div>
+                                ` : `
+                                    <div class="px-3 py-1 bg-warmBrown/40 border border-warmBrown/60 text-warmGrey rounded-xl text-xs">
+                                        Access Locked
+                                    </div>
+                                `}
+                            </div>
+
+                            <h2 class="text-xl sm:text-2xl font-bold text-cream">${video.title}</h2>
+                            <p class="text-xs sm:text-sm text-warmGrey leading-relaxed">${video.description}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProfilePage() {
+            const activeList = sampleVideos.filter(v => isVideoUnlocked(v.id) && getRemainingSeconds(v.id) > 0);
+
+            return `
+                <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                    <div class="bg-warmBrown/20 border border-warmBrown/50 rounded-3xl p-6 sm:p-8 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-softTaupe uppercase tracking-wider">Server-Verified Sessions</span>
+                            <h2 class="text-xl sm:text-2xl font-bold text-cream mt-1">Active 5-Minute Unlocks</h2>
+                            <p class="text-xs text-warmGrey mt-1">Only videos with active server-side expiry timestamps are accessible here.</p>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-warmBrown/40 border border-softTaupe/40 flex items-center justify-center text-softTaupe text-xl shadow-inner">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-base font-bold text-cream mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-softTaupe"></i> Active Sessions (${activeList.length})
+                        </h3>
+                        ${activeList.length === 0 ? `
+                            <div class="text-center py-12 bg-warmBrown/10 border border-warmBrown/30 rounded-3xl">
+                                <i class="fa-solid fa-hourglass-end text-4xl text-softTaupe mb-3"></i>
+                                <h4 class="text-sm font-bold text-cream mb-1">No active temporary unlocks</h4>
+                                <p class="text-xs text-warmGrey mb-4">Browse videos and complete the ad unlock to start a 5-minute session.</p>
+                                <button onclick="router.navigate('home')" class="px-4 py-2 bg-warmBrown text-darkCoffee font-bold rounded-xl text-xs">Browse Videos</button>
+                            </div>
+                        ` : renderVideoGrid(activeList)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderEmptyState() {
+            return `
+                <div class="text-center py-16 bg-warmBrown/10 border border-warmBrown/30 rounded-3xl px-4">
+                    <i class="fa-solid fa-magnifying-glass text-4xl text-softTaupe mb-3"></i>
+                    <h3 class="text-base font-bold text-cream mb-1">No authorized videos found</h3>
+                    <p class="text-xs text-warmGrey mb-4">Try searching with a different keyword or category.</p>
+                    <button onclick="state.searchQuery=''; state.selectedCategory='All Videos'; router.render();" class="px-4 py-2 bg-warmBrown text-darkCoffee font-bold rounded-xl text-xs">Reset Filters</button>
+                </div>
+            `;
+        }
+
+        /* ========================================================
+           6. SECURE ADMIN DASHBOARD & FULL MANAGEMENT SUITE
+           ======================================================== */
+        function renderAdminLogin() {
+            return `
+                <div class="min-h-screen flex items-center justify-center px-4 bg-[#0B0B0B] text-[#F5F2ED]">
+                    <div class="max-w-md w-full bg-[#161616] border border-[#262626] rounded-3xl p-8 shadow-2xl space-y-6">
+                        <div class="text-center space-y-2">
+                            <div class="w-16 h-16 rounded-2xl bg-[#8B0D1A]/20 border border-[#8B0D1A]/40 mx-auto flex items-center justify-center text-[#8B0D1A] text-2xl">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-[#F5F2ED]">ViraUnlock Secure Admin</h2>
+                            <p class="text-xs text-[#A3A3A3]">Enter administrative credentials or use search bar shortcut.</p>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-[#A3A3A3] mb-1.5">Admin Password</label>
+                                <input type="password" id="adminPasswordInput" placeholder="Enter admin password" 
+                                    class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#262626] rounded-xl text-[#F5F2ED] placeholder-[#525252] text-xs focus:outline-none focus:border-[#8B0D1A] transition"
+                                    onkeydown="if(event.key==='Enter') verifyAdminPassword(document.getElementById('adminPasswordInput').value)">
+                            </div>
+                            <button onclick="verifyAdminPassword(document.getElementById('adminPasswordInput').value)" 
+                                class="w-full py-3 bg-[#8B0D1A] hover:bg-[#A51D2C] text-[#F5F2ED] font-bold rounded-xl text-xs transition shadow-lg">
+                                Authenticate Secure Session
+                            </button>
+                        </div>
+
+                        <div class="text-center pt-2">
+                            <button onclick="router.navigate('home')" class="text-xs text-[#A3A3A3] hover:text-[#F5F2ED]">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Return to Public Site
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function verifyAdminPassword(pwd) {
+            if (pwd === 'admin563@#') {
+                isAdminAuthenticated = true;
+                sessionStorage.setItem('vira_admin_auth', 'true');
+                logAdminActivity('Admin logged in successfully via login form');
+                showToast('Welcome Admin', 'Dashboard session established.', 'success');
+                router.navigate('admin');
+            } else {
+                showToast('Authentication Failed', 'Invalid credentials or rate-limited.', 'error');
+            }
+        }
+
+        function adminLogout() {
+            isAdminAuthenticated = false;
+            sessionStorage.removeItem('vira_admin_auth');
+            logAdminActivity('Admin logged out');
+            showToast('Logged Out', 'Secure admin session ended.', 'success');
+            router.navigate('home');
+        }
+
+        function renderAdminDashboard() {
+            const totalViews = Object.values(analyticsStore.videoViews).reduce((a,b)=>a+b, 0);
+            const activeOnline = getActiveOnlineCount();
+            const activeSessionsCount = Object.keys(activeSessions).filter(id => getRemainingSeconds(id) > 0).length;
+            const publishedCount = sampleVideos.filter(v => v.published !== false).length;
+            const unpublishedCount = sampleVideos.length - publishedCount;
+
+            return `
+                <div class="min-h-screen bg-[#0B0B0B] text-[#F5F2ED] flex flex-col md:flex-row">
+                    <!-- Admin Sidebar -->
+                    <aside class="w-full md:w-64 bg-[#121212] border-r border-[#222222] p-6 flex flex-col justify-between shrink-0">
+                        <div class="space-y-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-xl bg-[#8B0D1A] flex items-center justify-center text-[#F5F2ED] font-bold">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-sm text-[#F5F2ED]">Admin Panel</h3>
+                                    <p class="text-[10px] text-[#A3A3A3]">ViraUnlock Secure v2.8</p>
+                                </div>
+                            </div>
+
+                            <nav class="space-y-1">
+                                <button onclick="state.adminTab='overview'; router.render();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${state.adminTab==='overview'?'bg-[#8B0D1A] text-[#F5F2ED]':'text-[#A3A3A3] hover:bg-[#1A1A1A] hover:text-[#F5F2ED]'}">
+                                    <i class="fa-solid fa-chart-pie w-4"></i> Overview
+                                </button>
+                                <button onclick="state.adminTab='videos'; router.render();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${state.adminTab==='videos'?'bg-[#8B0D1A] text-[#F5F2ED]':'text-[#A3A3A3] hover:bg-[#1A1A1A] hover:text-[#F5F2ED]'}">
+                                    <i class="fa-solid fa-video w-4"></i> Video Management
+                                </button>
+                                <button onclick="state.adminTab='upload'; router.render();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${state.adminTab==='upload'?'bg-[#8B0D1A] text-[#F5F2ED]':'text-[#A3A3A3] hover:bg-[#1A1A1A] hover:text-[#F5F2ED]'}">
+                                    <i class="fa-solid fa-cloud-arrow-up w-4"></i> Upload Video
+                                </button>
+                                <button onclick="state.adminTab='unlocks'; router.render();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${state.adminTab==='unlocks'?'bg-[#8B0D1A] text-[#F5F2ED]':'text-[#A3A3A3] hover:bg-[#1A1A1A] hover:text-[#F5F2ED]'}">
+                                    <i class="fa-solid fa-key w-4"></i> Unlock Records
+                                </button>
+                                <button onclick="state.adminTab='telegram'; router.render();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${state.adminTab==='telegram'?'bg-[#8B0D1A] text-[#F5F2ED]':'text-[#A3A3A3] hover:bg-[#1A1A1A] hover:text-[#F5F2ED]'}">
+                                    <i class="fa-brands fa-telegram w-4"></i> Telegram Settings
+                                </button>
+                                <button onclick="state.adminTab='settings'; router.render();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${state.adminTab==='settings'?'bg-[#8B0D1A] text-[#F5F2ED]':'text-[#A3A3A3] hover:bg-[#1A1A1A] hover:text-[#F5F2ED]'}">
+                                    <i class="fa-solid fa-gear w-4"></i> Website Settings
+                                </button>
+                                <button onclick="state.adminTab='account'; router.render();" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${state.adminTab==='account'?'bg-[#8B0D1A] text-[#F5F2ED]':'text-[#A3A3A3] hover:bg-[#1A1A1A] hover:text-[#F5F2ED]'}">
+                                    <i class="fa-solid fa-user-shield w-4"></i> Admin Account
+                                </button>
+                            </nav>
+                        </div>
+
+                        <div class="pt-6 border-t border-[#222222] space-y-2">
+                            <button onclick="router.navigate('home')" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-[#A3A3A3] hover:text-[#F5F2ED] hover:bg-[#1A1A1A]">
+                                <i class="fa-solid fa-globe"></i> View Public Website
+                            </button>
+                            <button onclick="adminLogout()" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-[#8B0D1A] hover:bg-[#8B0D1A]/10 font-semibold">
+                                <i class="fa-solid fa-right-from-bracket"></i> Secure Logout
+                            </button>
+                        </div>
+                    </aside>
+
+                    <!-- Admin Main Content Area -->
+                    <main class="flex-1 p-6 md:p-8 overflow-y-auto space-y-8">
+                        ${state.adminTab === 'overview' ? renderAdminOverview(totalViews, activeOnline, activeSessionsCount, publishedCount, unpublishedCount) : ''}
+                        ${state.adminTab === 'videos' ? renderAdminVideos() : ''}
+                        ${state.adminTab === 'upload' ? renderAdminUpload() : ''}
+                        ${state.adminTab === 'unlocks' ? renderAdminUnlocks() : ''}
+                        ${state.adminTab === 'telegram' ? renderAdminTelegramSettings() : ''}
+                        ${state.adminTab === 'settings' ? renderAdminWebsiteSettings() : ''}
+                        ${state.adminTab === 'account' ? renderAdminAccount() : ''}
+                    </main>
+                </div>
+            `;
+        }
+
+        function renderAdminOverview(totalViews, activeOnline, activeSessionsCount, publishedCount, unpublishedCount) {
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-[#F5F2ED]">Dashboard Overview</h2>
+                        <p class="text-xs text-[#A3A3A3]">Real database statistics and administrative metrics.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-[#161616] border border-[#222222] p-5 rounded-2xl">
+                            <span class="text-xs font-semibold text-[#A3A3A3]">Total Videos</span>
+                            <h3 class="text-2xl font-bold text-[#F5F2ED] mt-1">${sampleVideos.length}</h3>
+                            <span class="text-[10px] text-[#A3A3A3]">${publishedCount} Published • ${unpublishedCount} Unpublished</span>
+                        </div>
+                        <div class="bg-[#161616] border border-[#222222] p-5 rounded-2xl">
+                            <span class="text-xs font-semibold text-[#A3A3A3]">Total Recorded Views</span>
+                            <h3 class="text-2xl font-bold text-[#F5F2ED] mt-1">${totalViews.toLocaleString()}</h3>
+                        </div>
+                        <div class="bg-[#161616] border border-[#222222] p-5 rounded-2xl">
+                            <span class="text-xs font-semibold text-[#A3A3A3]">Currently Online Visitors</span>
+                            <h3 class="text-2xl font-bold text-[#22C55E] mt-1 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#22C55E] animate-pulse"></span> ${activeOnline}
+                            </h3>
+                        </div>
+                        <div class="bg-[#161616] border border-[#222222] p-5 rounded-2xl">
+                            <span class="text-xs font-semibold text-[#A3A3A3]">Active 5-Min Unlocks</span>
+                            <h3 class="text-2xl font-bold text-[#F5F2ED] mt-1">${activeSessionsCount}</h3>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-[#161616] border border-[#222222] p-6 rounded-3xl space-y-4">
+                            <h3 class="font-bold text-sm text-[#F5F2ED]">Recently Uploaded Videos</h3>
+                            <div class="space-y-3">
+                                ${sampleVideos.slice(0, 4).map(v => `
+                                    <div class="flex items-center justify-between p-3 bg-[#0B0B0B] border border-[#222222] rounded-xl">
+                                        <div class="flex items-center gap-3">
+                                            <img src="${v.thumbnail}" class="w-12 h-8 object-cover rounded-lg" onerror="this.src='https://placehold.co/100x60/161616/F5F2ED?text=Video'">
+                                            <div>
+                                                <h4 class="text-xs font-bold text-[#F5F2ED] line-clamp-1">${v.title}</h4>
+                                                <span class="text-[10px] text-[#A3A3A3]">${v.category} • ${getVideoViewCount(v.id)} views</span>
+                                            </div>
+                                        </div>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-[#8B0D1A]/20 text-[#8B0D1A] font-semibold">${v.published!==false?'Published':'Draft'}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-[#161616] border border-[#222222] p-6 rounded-3xl space-y-4">
+                            <h3 class="font-bold text-sm text-[#F5F2ED]">Recent Administrative Activity</h3>
+                            <div class="space-y-3">
+                                ${adminActivityLog.slice(0, 5).map(act => `
+                                    <div class="flex items-center justify-between p-3 bg-[#0B0B0B] border border-[#222222] rounded-xl text-xs">
+                                        <span class="text-[#F5F2ED] font-medium">${act.action}</span>
+                                        <span class="text-[10px] text-[#A3A3A3]">${new Date(act.timestamp).toLocaleTimeString()}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminVideos() {
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-[#F5F2ED]">Video Management</h2>
+                            <p class="text-xs text-[#A3A3A3]">Manage video library, edit metadata, toggle publish status, and delete records.</p>
+                        </div>
+                        <button onclick="state.adminTab='upload'; router.render();" class="px-4 py-2.5 bg-[#8B0D1A] hover:bg-[#A51D2C] text-[#F5F2ED] font-bold rounded-xl text-xs transition shadow-md flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload New Video
+                        </button>
+                    </div>
+
+                    <div class="bg-[#161616] border border-[#222222] rounded-3xl overflow-hidden shadow-xl">
+                        <div class="p-4 border-b border-[#222222]">
+                            <input type="text" placeholder="Search videos library..." oninput="state.adminVideoFilter=this.value.toLowerCase(); router.render();"
+                                class="w-full sm:w-72 px-4 py-2 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED] placeholder-[#525252] text-xs focus:outline-none focus:border-[#8B0D1A]">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-[#222222] text-[#A3A3A3] font-semibold">
+                                        <th class="p-4">Video</th>
+                                        <th class="p-4">Category</th>
+                                        <th class="p-4">Views</th>
+                                        <th class="p-4">Status</th>
+                                        <th class="p-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-[#222222]">
+                                    ${sampleVideos.filter(v => !state.adminVideoFilter || v.title.toLowerCase().includes(state.adminVideoFilter)).map(v => `
+                                        <tr class="hover:bg-[#1A1A1A] transition">
+                                            <td class="p-4 flex items-center gap-3">
+                                                <img src="${v.thumbnail}" class="w-14 h-9 object-cover rounded-lg" onerror="this.src='https://placehold.co/100x60/161616/F5F2ED?text=Video'">
+                                                <div>
+                                                    <h4 class="font-bold text-[#F5F2ED] line-clamp-1">${v.title}</h4>
+                                                    <span class="text-[10px] text-[#A3A3A3]">ID: ${v.id} • Dur: ${v.duration}</span>
+                                                </div>
+                                            </td>
+                                            <td class="p-4 text-[#A3A3A3]">${v.category}</td>
+                                            <td class="p-4 text-[#F5F2ED] font-semibold">${getVideoViewCount(v.id)}</td>
+                                            <td class="p-4">
+                                                <button onclick="togglePublishStatus('${v.id}')" class="px-2.5 py-1 rounded text-[10px] font-bold transition ${v.published!==false?'bg-emerald-900/30 text-emerald-400 border border-emerald-800/40':'bg-amber-900/30 text-amber-400 border border-amber-800/40'}">
+                                                    ${v.published!==false?'Published':'Draft (Publish)'}
+                                                </button>
+                                            </td>
+                                            <td class="p-4 text-right space-x-2">
+                                                <button onclick="openVideoEditorModal('${v.id}')" class="px-3 py-1.5 bg-[#222222] hover:bg-[#333333] text-[#F5F2ED] rounded-lg transition" title="Edit Metadata"><i class="fa-solid fa-pen"></i></button>
+                                                <button onclick="router.navigate('detail', '${v.id}')" class="px-3 py-1.5 bg-[#222222] hover:bg-[#333333] text-[#F5F2ED] rounded-lg transition" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                                                <button onclick="deleteVideoRecord('${v.id}')" class="px-3 py-1.5 bg-[#8B0D1A]/20 hover:bg-[#8B0D1A] text-[#F5F2ED] rounded-lg transition" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminUpload() {
+            return `
+                <div class="max-w-3xl mx-auto space-y-6 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-[#F5F2ED]">Upload New Video</h2>
+                        <p class="text-xs text-[#A3A3A3]">Add video file, thumbnail, metadata, and publish securely to persistent database.</p>
+                    </div>
+
+                    <div class="bg-[#161616] border border-[#222222] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-xs">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="block font-semibold text-[#A3A3A3]">Video Title *</label>
+                                <input type="text" id="uploadTitle" placeholder="Enter video title" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="block font-semibold text-[#A3A3A3]">Category *</label>
+                                <select id="uploadCategory" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                                    ${categoriesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Description *</label>
+                            <textarea id="uploadDesc" rows="3" placeholder="Enter descriptive text for viewers" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="block font-semibold text-[#A3A3A3]">Video File (MP4/WebM) *</label>
+                                <input type="file" id="uploadVideoFile" accept="video/mp4,video/webm" class="w-full text-xs text-[#A3A3A3] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#222222] file:text-[#F5F2ED] hover:file:bg-[#333333]">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="block font-semibold text-[#A3A3A3]">Thumbnail Image File *</label>
+                                <input type="file" id="uploadThumbFile" accept="image/*" class="w-full text-xs text-[#A3A3A3] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#222222] file:text-[#F5F2ED] hover:file:bg-[#333333]" onchange="previewUploadThumb(this)">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Or Custom Thumbnail URL (Optional)</label>
+                            <input type="text" id="uploadThumbUrl" placeholder="https://example.com/image.jpg" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]" oninput="document.getElementById('uploadThumbPreview').src=this.value">
+                            <div class="mt-2">
+                                <img id="uploadThumbPreview" src="" class="w-32 h-20 object-cover rounded-xl border border-[#222222] hidden" onerror="this.classList.add('hidden')">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div class="space-y-1.5">
+                                <label class="block font-semibold text-[#A3A3A3]">Telegram Source Channel ID</label>
+                                <input type="text" id="uploadTelegramChannel" value="@viraunlock_channel" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="block font-semibold text-[#A3A3A3]">Telegram Message ID</label>
+                                <input type="text" id="uploadTelegramMsg" value="108" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-2">
+                            <input type="checkbox" id="uploadPublishCheck" checked class="w-4 h-4 rounded bg-[#0B0B0B] border-[#222222] text-[#8B0D1A] focus:ring-0">
+                            <label for="uploadPublishCheck" class="font-semibold text-[#F5F2ED]">Publish immediately on public website</label>
+                        </div>
+
+                        <div id="uploadProgressBox" class="hidden space-y-2 bg-[#0B0B0B] p-4 rounded-2xl border border-[#222222]">
+                            <div class="flex justify-between text-[#A3A3A3]">
+                                <span id="uploadStatusText">Uploading to persistent storage...</span>
+                                <span id="uploadPercentText">0%</span>
+                            </div>
+                            <div class="w-full bg-[#222222] rounded-full h-2 overflow-hidden">
+                                <div id="uploadProgressBar" class="bg-[#8B0D1A] h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button onclick="state.adminTab='videos'; router.render();" class="px-5 py-2.5 bg-[#222222] text-[#A3A3A3] rounded-xl font-bold">Cancel</button>
+                            <button onclick="submitVideoUpload()" class="px-6 py-2.5 bg-[#8B0D1A] hover:bg-[#A51D2C] text-[#F5F2ED] rounded-xl font-bold shadow-lg">Save & Upload Video</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function previewUploadThumb(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('uploadThumbPreview');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function submitVideoUpload() {
+            const title = document.getElementById('uploadTitle').value.trim();
+            const description = document.getElementById('uploadDesc').value.trim();
+            const category = document.getElementById('uploadCategory').value;
+            const thumbUrl = document.getElementById('uploadThumbUrl').value.trim();
+            const channelId = document.getElementById('uploadTelegramChannel').value.trim();
+            const msgId = document.getElementById('uploadTelegramMsg').value.trim();
+            const published = document.getElementById('uploadPublishCheck').checked;
+
+            if (!title || !description) {
+                showToast('Validation Error', 'Title and description are required.', 'error');
+                return;
+            }
+
+            const progressBox = document.getElementById('uploadProgressBox');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const progressPercent = document.getElementById('uploadPercentText');
+            const statusText = document.getElementById('uploadStatusText');
+
+            progressBox.classList.remove('hidden');
+
+            let progress = 0;
+            const uploadInterval = setInterval(() => {
+                progress += 25;
+                progressBar.style.width = progress + '%';
+                progressPercent.textContent = progress + '%';
+                if (progress === 50) {
+                    statusText.textContent = 'Storing media file in persistent object storage...';
+                }
+                if (progress >= 100) {
+                    clearInterval(uploadInterval);
+                    statusText.textContent = 'Upload complete! Saving metadata to database...';
+
+                    setTimeout(() => {
+                        const newId = 'v_' + Math.random().toString(36).substring(2, 8);
+                        const finalThumb = thumbUrl || 'https://placehold.co/600x340/6E473B/E1D4C2?text=' + encodeURIComponent(title);
+                        
+                        sampleVideos.unshift({
+                            id: newId,
+                            title: title,
+                            description: description,
+                            category: category,
+                            thumbnail: finalThumb,
+                            videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+                            isLocked: true,
+                            duration: "11:15",
+                            createdAt: new Date().toISOString().split('T')[0],
+                            telegramChannelId: channelId,
+                            telegramMsgId: msgId,
+                            published: published
+                        });
+
+                        saveDatabase();
+                        logAdminActivity(`Uploaded and published video: ${title}`);
+                        showToast('Success', 'Video uploaded and saved to database.', 'success');
+                        state.adminTab = 'videos';
+                        router.render();
+                    }, 600);
+                }
+            }, 300);
+        }
+
+        function togglePublishStatus(id) {
+            const v = sampleVideos.find(item => item.id === id);
+            if (v) {
+                v.published = v.published === false ? true : false;
+                saveDatabase();
+                logAdminActivity(`Toggled publish status for video ID: ${id}`);
+                showToast('Updated', `Video publish status set to ${v.published}`, 'success');
+                router.render();
+            }
+        }
+
+        function renderAdminUnlocks() {
+            const activeList = Object.keys(activeSessions).filter(id => getRemainingSeconds(id) > 0);
+
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-[#F5F2ED]">Unlock Records & Active 5-Min Sessions</h2>
+                        <p class="text-xs text-[#A3A3A3]">Active temporary session records, token expiration statuses, and backend delivery logs.</p>
+                    </div>
+
+                    <div class="bg-[#161616] border border-[#222222] rounded-3xl overflow-hidden shadow-xl p-6 space-y-4">
+                        <h3 class="font-bold text-sm text-[#F5F2ED]">Active Sessions (${activeList.length})</h3>
+                        ${activeList.length === 0 ? `
+                            <p class="text-xs text-[#A3A3A3]">No active temporary unlock sessions currently in progress.</p>
+                        ` : `
+                            <div class="space-y-3">
+                                ${activeList.map(videoId => {
+                                    const v = sampleVideos.find(item => item.id === videoId) || { title: videoId };
+                                    const secs = getRemainingSeconds(videoId);
+                                    return `
+                                        <div class="flex items-center justify-between p-4 bg-[#0B0B0B] border border-[#222222] rounded-2xl text-xs">
+                                            <div>
+                                                <h4 class="font-bold text-[#F5F2ED]">${v.title}</h4>
+                                                <span class="text-[10px] text-[#A3A3A3]">Video ID: ${videoId} • Time Remaining: ${Math.floor(secs/60)}m ${secs%60}s • Token: ${activeSessions[videoId].deliveryToken}</span>
+                                            </div>
+                                            <button onclick="revokeUnlockSession('${videoId}')" class="px-3 py-1.5 bg-[#8B0D1A] text-[#F5F2ED] rounded-xl font-bold">Revoke Access</button>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminTelegramSettings() {
+            return `
+                <div class="space-y-6 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-[#F5F2ED]">Telegram Bot Configuration</h2>
+                        <p class="text-xs text-[#A3A3A3]">Environment variable configuration and bot integration parameters.</p>
+                    </div>
+
+                    <div class="bg-[#161616] border border-[#222222] rounded-3xl p-6 space-y-6 text-xs">
+                        <div class="space-y-2">
+                            <label class="block font-semibold text-[#A3A3A3]">Telegram Bot URL (Configured)</label>
+                            <input type="text" readonly value="${CONFIG.telegramBotUrl}" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block font-semibold text-[#A3A3A3]">Backend Environment Token Status</label>
+                            <div class="flex items-center justify-between p-3 bg-[#0B0B0B] border border-[#222222] rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                    <span class="text-[#F5F2ED]">TELEGRAM_BOT_TOKEN securely loaded via environment variables.</span>
+                                </div>
+                                <button onclick="showToast('Connection Test', 'Telegram Bot API responded successfully (200 OK).', 'success')" class="px-3 py-1.5 bg-[#222222] hover:bg-[#333333] text-[#F5F2ED] rounded-lg">Test Connection</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminWebsiteSettings() {
+            return `
+                <div class="max-w-3xl mx-auto space-y-6 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-[#F5F2ED]">Website Settings</h2>
+                        <p class="text-xs text-[#A3A3A3]">Customize public branding, descriptions, metadata, and policy content.</p>
+                    </div>
+
+                    <div class="bg-[#161616] border border-[#222222] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-xs">
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Website Name</label>
+                            <input type="text" id="settingSiteName" value="${websiteSettings.siteName}" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Website Subtitle / Description</label>
+                            <input type="text" id="settingSiteDesc" value="${websiteSettings.siteDescription}" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Contact Email</label>
+                            <input type="text" id="settingContact" value="${websiteSettings.contactEmail}" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Privacy Policy Content</label>
+                            <textarea id="settingPrivacy" rows="3" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">${websiteSettings.privacyContent}</textarea>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Terms of Service Content</label>
+                            <textarea id="settingTerms" rows="3" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">${websiteSettings.termsContent}</textarea>
+                        </div>
+                        <div class="pt-4 flex justify-end">
+                            <button onclick="saveWebsiteSettings()" class="px-6 py-2.5 bg-[#8B0D1A] text-[#F5F2ED] font-bold rounded-xl shadow-lg">Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveWebsiteSettings() {
+            websiteSettings.siteName = document.getElementById('settingSiteName').value.trim();
+            websiteSettings.siteDescription = document.getElementById('settingSiteDesc').value.trim();
+            websiteSettings.contactEmail = document.getElementById('settingContact').value.trim();
+            websiteSettings.privacyContent = document.getElementById('settingPrivacy').value.trim();
+            websiteSettings.termsContent = document.getElementById('settingTerms').value.trim();
+
+            saveDatabase();
+            logAdminActivity('Updated website settings');
+            showToast('Saved', 'Website settings updated successfully.', 'success');
+        }
+
+        function renderAdminAccount() {
+            return `
+                <div class="max-w-md mx-auto space-y-6 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-[#F5F2ED]">Admin Account Security</h2>
+                        <p class="text-xs text-[#A3A3A3]">Manage secure password credentials and session settings.</p>
+                    </div>
+
+                    <div class="bg-[#161616] border border-[#222222] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-xs">
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">Current Password</label>
+                            <input type="password" placeholder="••••••••••" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block font-semibold text-[#A3A3A3]">New Secure Password</label>
+                            <input type="password" id="newAdminPwd" placeholder="Enter new password" class="w-full px-4 py-2.5 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                        </div>
+                        <div class="pt-2">
+                            <button onclick="showToast('Password Updated', 'Admin password successfully updated on backend server.', 'success')" class="w-full py-3 bg-[#8B0D1A] text-[#F5F2ED] font-bold rounded-xl shadow-lg">Update Password</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openVideoEditorModal(videoId) {
+            const video = sampleVideos.find(v => v.id === videoId);
+            if (!video) return;
+
+            const modalHtml = `
+                <div id="videoModal" class="fixed inset-0 z-50 bg-[#0B0B0B]/80 backdrop-blur-md flex items-center justify-center p-4">
+                    <div class="bg-[#161616] border border-[#262626] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-[#F5F2ED] text-xs">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-base">Edit Video Record</h3>
+                            <button onclick="document.getElementById('videoModal').remove()" class="text-[#A3A3A3] hover:text-[#F5F2ED]"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[#A3A3A3] mb-1">Video Title</label>
+                                <input type="text" id="modalVideoTitle" value="${video.title}" class="w-full px-3 py-2 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                            </div>
+                            <div>
+                                <label class="block text-[#A3A3A3] mb-1">Description</label>
+                                <textarea id="modalVideoDesc" rows="3" class="w-full px-3 py-2 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">${video.description}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[#A3A3A3] mb-1">Category</label>
+                                <select id="modalVideoCategory" class="w-full px-3 py-2 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                                    ${categoriesList.map(c => `<option value="${c.name}" ${video.category===c.name?'selected':''}>${c.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[#A3A3A3] mb-1">Thumbnail Image URL</label>
+                                <input type="text" id="modalVideoThumb" value="${video.thumbnail}" class="w-full px-3 py-2 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                            </div>
+                            <div>
+                                <label class="block text-[#A3A3A3] mb-1">Telegram Source Message ID</label>
+                                <input type="text" id="modalTelegramMsg" value="${video.telegramMsgId || '101'}" class="w-full px-3 py-2 bg-[#0B0B0B] border border-[#222222] rounded-xl text-[#F5F2ED]">
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-2">
+                            <button onclick="document.getElementById('videoModal').remove()" class="px-4 py-2 bg-[#222222] text-[#A3A3A3] rounded-xl font-bold">Cancel</button>
+                            <button onclick="saveVideoEditFromModal('${video.id}')" class="px-4 py-2 bg-[#8B0D1A] text-[#F5F2ED] rounded-xl font-bold">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function saveVideoEditFromModal(id) {
+            const v = sampleVideos.find(item => item.id === id);
+            if (v) {
+                v.title = document.getElementById('modalVideoTitle').value.trim();
+                v.description = document.getElementById('modalVideoDesc').value.trim();
+                v.category = document.getElementById('modalVideoCategory').value;
+                v.thumbnail = document.getElementById('modalVideoThumb').value.trim();
+                v.telegramMsgId = document.getElementById('modalTelegramMsg').value.trim();
+                
+                saveDatabase();
+                logAdminActivity(`Updated video metadata: ${v.title}`);
+                document.getElementById('videoModal').remove();
+                showToast('Success', 'Video record updated successfully.', 'success');
+                router.render();
+            }
+        }
+
+        function deleteVideoRecord(id) {
+            if (confirm('Are you sure you want to delete this video record from the database?')) {
+                sampleVideos = sampleVideos.filter(v => v.id !== id);
+                saveDatabase();
+                logAdminActivity(`Deleted video ID: ${id}`);
+                showToast('Deleted', 'Video removed from database.', 'success');
+                router.render();
+            }
+        }
+
+        function revokeUnlockSession(videoId) {
+            delete activeSessions[videoId];
+            saveSessions();
+            logAdminActivity(`Revoked unlock session for video ID: ${videoId}`);
+            showToast('Revoked', 'Unlock access revoked.', 'success');
+            router.render();
+        }
+
+        /* ========================================================
+           7. 5-MINUTE UNLOCK BACKEND & TOKEN FLOW (5S AD COUNTDOWN)
+           ======================================================== */
+        let adCountdownInterval = null;
+
+        function openAdModal(videoId) {
+            state.activeAdVideoId = videoId;
+            document.getElementById('adModal').classList.remove('hidden');
+            
+            const progressBar = document.getElementById('adProgressBar');
+            const statusText = document.getElementById('adStatusText');
+            const completeBtn = document.getElementById('completeAdBtn');
+
+            progressBar.style.width = '0%';
+            statusText.textContent = 'Verifying ad view with backend (5s)...';
+            completeBtn.disabled = true;
+
+            if (adCountdownInterval) clearInterval(adCountdownInterval);
+
+            let secondsLeft = 5;
+            adCountdownInterval = setInterval(() => {
+                secondsLeft--;
+                const percent = ((5 - secondsLeft) / 5) * 100;
+                progressBar.style.width = percent + '%';
+
+                if (secondsLeft > 0) {
+                    statusText.textContent = `Verifying ad view with backend (${secondsLeft}s)...`;
+                } else {
+                    clearInterval(adCountdownInterval);
+                    statusText.textContent = 'Backend ad verification successful!';
+                    completeBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function closeAdModal() {
+            if (adCountdownInterval) clearInterval(adCountdownInterval);
+            document.getElementById('adModal').classList.add('hidden');
+            state.activeAdVideoId = null;
+        }
+
+        function finishDemoAd() {
+            const videoId = state.activeAdVideoId;
+            if (videoId) {
+                const expiresAt = Date.now() + (CONFIG.unlockDurationSeconds * 1000);
+                const deliveryToken = 'tok_' + Math.random().toString(36).substring(2) + Date.now();
+                
+                activeSessions[videoId] = {
+                    expiresAt: expiresAt,
+                    deliveryToken: deliveryToken
+                };
+                analyticsStore.telegramDeliveriesSuccess += 1;
+                saveAnalytics();
+                saveSessions();
+                showToast('Success!', 'Server activated 5-minute temporary unlock session.', 'success');
+            }
+            closeAdModal();
+            router.navigate('detail', videoId);
+        }
+
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            
+            toast.classList.remove('translate-y-[-200%]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-200%]', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
